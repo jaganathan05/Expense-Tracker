@@ -1,72 +1,30 @@
-function saveexpense(event) {
-    event.preventDefault();
+const path = require('path');
 
-    var catagory = document.getElementById('catagory-select').value;
-    var amount = document.getElementById('amount-input').value;
-    var date = document.getElementById('date-input').value;
+const express = require('express');
+const bodyParser = require('body-parser');
 
-    var expansedetail = { 
-        Category: catagory,
-        Amount: amount,
-        Date: date
-    };
+const expenseController = require('./controller/expence');
+const sequelize = require('./helper/database');
 
-    
-    var existingExpenses = JSON.parse(localStorage.getItem('expenses')) || [];
-
-    
-    existingExpenses.push(expansedetail);
-
-   
-    localStorage.setItem('expenses', JSON.stringify(existingExpenses));
-
-    console.log(expansedetail);
-
-    displayExpenses(existingExpenses);
-}
-
-function displayExpenses(expenses) {
-    var expensesContainer = document.getElementById('expenses-container');
-    expensesContainer.innerHTML = ''; 
-
-    expenses.forEach(function(expense, index) {
-        var expenseElement = document.createElement('div');
-        expenseElement.innerHTML = "<p>Category: " + expense.Category + "</p>" +
-                                  "<p>Amount: " + expense.Amount + "</p>" +
-                                  "<p>Date: " + expense.Date + "</p>";
-
-        
-        var editButton = document.createElement('button');
-        editButton.textContent = "Edit";
-        editButton.addEventListener('click', function() {
-            
-            document.getElementById('catagory-select').value = expense.Category;
-            document.getElementById('amount-input').value = expense.Amount;
-            document.getElementById('date-input').value = expense.Date;
-
-            expenseElement.remove();
-        });
-
-   
-        var deleteButton = document.createElement('button');
-        deleteButton.textContent = "Delete";
-        deleteButton.addEventListener('click', function() {
-          
-            expenseElement.remove();
-        
-            expenses.splice(index, 1);
-            localStorage.setItem('expenses', JSON.stringify(expenses));
-        });
-
-        expenseElement.appendChild(editButton);
-        expenseElement.appendChild(deleteButton);
-
-        expensesContainer.appendChild(expenseElement);
-    });
-}
+const app = express();
 
 
-window.onload = function() {
-    var existingExpenses = JSON.parse(localStorage.getItem('expenses')) || [];
-    displayExpenses(existingExpenses);
-};
+const expenseRoutes = require('./routes/expense');
+app.use(express.static(path.join(__dirname, 'views')));
+
+app.set('view engine', 'ejs');
+app.set('views','views' );
+
+
+
+app.use(bodyParser.urlencoded({ extended: false }));
+
+app.use(expenseRoutes);
+
+
+sequelize.sync().then(res=>{
+    //console.log(res)
+    app.listen(3000);
+}).catch(err=>{
+    console.log(err);
+})
