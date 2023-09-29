@@ -26,6 +26,7 @@ exports.addExpense=(req, res, next) => {
   })
   .then((expenses) => {
     res.render('index',{
+      expenses:expenses,
       path:'/expenses'
     })
   })
